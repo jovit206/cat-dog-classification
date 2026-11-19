@@ -5,7 +5,7 @@
   "pretrained_on": "ImageNet",
   "candidate_model": "models/candidate_dogs_cats_model.keras",
   "production_model": "models/dogs_cats_model.keras",
-  "dataset": "dataset_224",
+  "dataset": "data/processed_224",
   "class_mapping": {
     "Dog": 0,
     "Cat": 1

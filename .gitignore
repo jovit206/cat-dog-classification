@@ -1,9 +1,46 @@
-﻿.venv/
+﻿# --- Python environment & caches ---
+.venv/
+venv/
+env/
 __pycache__/
-*.h5
-*.keras
-*.pth
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Datasets (rebuild with src/preprocessing.py) ---
+data/
+dataset/
+dataset_224/
 *.zip
-train/
-test/
-test1/
+*.tar
+*.tar.gz
+
+# --- Model weights (rebuild with src/train_transfer.py / src/train_scratch.py) ---
+# Small metadata such as models/model_metadata.json and models/imagenet_class_index.json stays tracked.
+*.keras
+*.h5
+*.hdf5
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.tflite
+saved_model/
+
+# --- Logs & temporary files ---
+*.log
+*.tmp
+.pawvision_staging_*/
+.pawvision_backup_*/
+
+# --- Local configuration & OS / editor files ---
+.streamlit/secrets.toml
+.env
+.kaggle/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

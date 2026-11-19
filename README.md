@@ -43,6 +43,37 @@ The scratch CNN, its code and its outputs are kept in `backups/scratch_cnn_20261
 
 The source is Hugging Face [`shravya11/dog-cat-dataset`](https://huggingface.co/datasets/shravya11/dog-cat-dataset). From its train split, we take 2,500 cats and 2,500 dogs. These go into fixed-seed, disjoint splits of 70/15/15: 3,500 train, 750 validation and 750 test. The source test split is not used.
 
+## Project structure
+
+```text
+dogs-vs-cats/
+├── app.py                      # Streamlit app (entry point)
+├── requirements.txt
+├── .streamlit/config.toml      # Light theme, upload limit
+├── src/
+│   ├── paths.py                # All project paths, resolved from the repo root
+│   ├── preprocessing.py        # Builds the balanced 70/15/15 split from the Hugging Face cache
+│   ├── model.py                # tf.data input pipeline + scratch CNN architecture
+│   ├── train_scratch.py        # Scratch-CNN experiments (validation-only selection)
+│   ├── train_transfer.py       # MobileNetV2 / EfficientNetV2-B0 fine-tuning (production)
+│   └── evaluate.py             # One-time test evaluation, charts, promotion to production
+├── notebooks/
+│   └── model_training.ipynb    # Interactive version of the scratch pipeline
+├── data/                       # Generated, git-ignored
+│   ├── processed_128/{train,validation,test}/{Cat,Dog}/
+│   └── processed_224/{train,validation,test}/{Cat,Dog}/
+├── models/
+│   ├── dogs_cats_model.keras   # Production model (git-ignored)
+│   ├── model_metadata.json     # Threshold, input size, selection record
+│   ├── pet_gate_imagenet.keras # "Is this a pet?" check used by the app (git-ignored)
+│   ├── imagenet_class_index.json
+│   └── experiment_candidates/  # Every trained candidate (git-ignored)
+├── outputs/                    # Metrics, reports, charts, per-experiment histories
+└── backups/                    # Archived earlier versions; evaluate.py and train_scratch.py read their metrics
+```
+
+Datasets and model weights are git-ignored because of their size, so a fresh clone has to rebuild them with the steps below. Every script resolves paths from the repository root, so it can be run from any directory.
+
 ## Run on Windows
 
 ```powershell
@@ -55,12 +86,22 @@ pip install -r requirements.txt
 Reproduce the production model. Training takes about 25 minutes on CPU, and the first run downloads ImageNet weights:
 
 ```powershell
-python src\preprocessing.py --per-class 2500 --seed 42 --image-size 224 --destination dataset_224
+python src\preprocessing.py --per-class 2500 --seed 42 --image-size 224 --destination data\processed_224
 python src\train_transfer.py
 python src\evaluate.py --promote --allow-repeat-test
 ```
 
-`train_transfer.py` also saves `models/pet_gate_imagenet.keras`. This is the full ImageNet MobileNetV2, which the app uses to warn when a photo doesn't look like a dog or cat. The scratch-CNN pipeline (`src/preprocessing.py`, then `src/train.py`, then `src/evaluate.py`) still works as before.
+`train_transfer.py` also saves `models/pet_gate_imagenet.keras`. This is the full ImageNet MobileNetV2, which the app uses to warn when a photo doesn't look like a dog or cat.
+
+The scratch-CNN pipeline still works. It writes `data/processed_128` by default:
+
+```powershell
+python src\preprocessing.py --per-class 2500 --seed 42
+python src\train_scratch.py --max-epochs 20 --patience 4 --seed 42
+python src\evaluate.py --allow-repeat-test
+```
+
+Leave out `--promote` here unless you want the scratch CNN to replace the production model.
 
 ## Run PawVision
 

@@ -15,7 +15,6 @@ import csv
 import json
 import shutil
 import time
-from pathlib import Path
 from typing import Any
 
 import matplotlib
@@ -26,12 +25,10 @@ import tensorflow as tf
 from sklearn.metrics import classification_report, confusion_matrix
 
 from model import CLASS_NAMES, make_dataset
-from train import choose_threshold
+from paths import CANDIDATE_METADATA, CANDIDATE_MODEL, DATASET_224, EXPERIMENT_CANDIDATES, MODELS, OUTPUTS, ROOT
+from train_scratch import choose_threshold
 
-ROOT = Path(__file__).resolve().parents[1]
-DATASET = ROOT / "dataset_224"
-OUTPUTS = ROOT / "outputs"
-MODELS = ROOT / "models"
+DATASET = DATASET_224
 IMAGE_SIZE = (224, 224)
 
 BACKBONES: dict[str, dict[str, Any]] = {
@@ -134,7 +131,7 @@ def run(name: str, head_epochs: int, fine_tune_epochs: int, patience: int, seed:
 
     model = tf.keras.models.load_model(checkpoint)
     scores = score(model, val_ds)
-    candidate_path = MODELS / "experiment_candidates" / f"{name}.keras"
+    candidate_path = EXPERIMENT_CANDIDATES / f"{name}.keras"
     candidate_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(checkpoint, candidate_path)
     (out_dir / "validation_metrics.json").write_text(json.dumps({k: v for k, v in scores.items() if k not in ("y_true", "p_cat")}, indent=2), encoding="utf-8")
@@ -194,7 +191,7 @@ def main() -> None:
     parser.add_argument("--experiments", nargs="*", choices=list(BACKBONES), default=list(BACKBONES))
     args = parser.parse_args()
     if not (DATASET / "train").is_dir():
-        raise SystemExit("dataset_224 is missing. Run: python src/preprocessing.py --image-size 224 --destination dataset_224")
+        raise SystemExit(f"{DATASET} is missing. Run: python src/preprocessing.py --image-size 224 --destination data/processed_224")
 
     save_pet_gate()
     rows = [run(name, args.head_epochs, args.fine_tune_epochs, args.patience, args.seed, args.batch_size) for name in args.experiments]
@@ -203,7 +200,7 @@ def main() -> None:
         writer.writeheader(); writer.writerows(rows)
 
     winner = max(rows, key=lambda r: (r["val_f1_macro"], r["val_accuracy"], -r["val_loss"]))
-    candidate = MODELS / "candidate_dogs_cats_model.keras"
+    candidate = CANDIDATE_MODEL
     shutil.copy2(ROOT / winner["model_path"], candidate)
     metadata = {
         "selected_experiment": winner["experiment"],
@@ -212,7 +209,7 @@ def main() -> None:
         "pretrained_on": "ImageNet",
         "candidate_model": candidate.relative_to(ROOT).as_posix(),
         "production_model": "models/dogs_cats_model.keras",
-        "dataset": "dataset_224",
+        "dataset": DATASET.relative_to(ROOT).as_posix(),
         "class_mapping": {"Dog": 0, "Cat": 1},
         "output": "P(Cat)",
         "input_range": [0.0, 1.0],
@@ -226,7 +223,7 @@ def main() -> None:
         "test_split_used_for_selection": False,
         "seed": args.seed,
     }
-    (MODELS / "candidate_metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    CANDIDATE_METADATA.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     print(f"Selected {winner['experiment']} on validation only (macro F1={winner['val_f1_macro']:.4f}). Candidate staged at {candidate}.")
 
 

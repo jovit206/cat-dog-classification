@@ -13,7 +13,8 @@ import pandas as pd
 import streamlit as st
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent  # Paths mirror src/paths.py.
+DATA = ROOT / "data"
 MODELS = ROOT / "models"
 OUTPUTS = ROOT / "outputs"
 MODEL_PATH = MODELS / "dogs_cats_model.keras"
@@ -26,6 +27,7 @@ DOG_CLASSES = np.arange(151, 269)
 CAT_CLASSES = np.arange(281, 286)
 PET_GATE_MIN = 0.20  # Below this ImageNet dog+cat mass, warn that the photo may not show a pet.
 MAX_BATCH = 24
+MAX_CACHED_PREDICTIONS = 64  # Keeps session memory bounded; oldest results are dropped first.
 
 st.set_page_config(page_title="PawVision · Dog or Cat?", page_icon="🐾", layout="wide", initial_sidebar_state="collapsed")
 
@@ -145,7 +147,7 @@ IMAGE_SIZE = (int(size[0]), int(size[1])) if isinstance(size, list) and len(size
 IS_TRANSFER = metadata.get("model_family") == "transfer_learning"
 BACKBONE_NAME = {"mobilenetv2": "MobileNetV2", "efficientnetv2b0": "EfficientNetV2-B0"}.get(str(metadata.get("backbone", "")), "Custom CNN")
 MODEL_LABEL = f"{BACKBONE_NAME} (pretrained)" if IS_TRANSFER else "Custom CNN"
-EXAMPLE_ROOT = ROOT / ("dataset_224" if (ROOT / "dataset_224" / "test").is_dir() else "dataset") / "test"
+EXAMPLE_ROOT = next((DATA / name / "test" for name in ("processed_224", "processed_128") if (DATA / name / "test").is_dir()), DATA / "processed_224" / "test")
 
 
 def pct(value, digits: int = 1) -> str:
@@ -247,6 +249,8 @@ def classify(items: list[tuple[str, bytes]]) -> tuple[list[Prediction], list[str
                 if labels:
                     prediction.looks_like = labels[int(np.argmax(probs))]
             cache[prediction.digest] = prediction
+        while len(cache) > MAX_CACHED_PREDICTIONS:
+            cache.pop(next(iter(cache)))
     return results, failed
 
 

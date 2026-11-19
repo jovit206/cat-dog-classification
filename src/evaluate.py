@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import os
 import shutil
@@ -30,11 +29,9 @@ from sklearn.metrics import (
 )
 
 from model import CLASS_NAMES, make_dataset
+from paths import BASELINE_BACKUP, CANDIDATE_METADATA, CANDIDATE_MODEL, DATASET_128, OUTPUTS, PRODUCTION_METADATA, PRODUCTION_MODEL, ROOT, SCRATCH_BACKUP
 
-ROOT = Path(__file__).resolve().parents[1]
-DATASET = ROOT / "dataset"
-OUTPUTS = ROOT / "outputs"
-MODELS = ROOT / "models"
+DATASET = DATASET_128  # Overridden by --dataset or the candidate metadata's "dataset" entry.
 
 
 def _plot_confusion(y_true: np.ndarray, y_pred: np.ndarray, path: Path) -> None:
@@ -77,7 +74,7 @@ def _plot_history(history_path: Path) -> None:
         fig.tight_layout(); fig.savefig(OUTPUTS / filename, dpi=160); plt.close(fig)
 
 
-def _save_test_error_examples(y_true: np.ndarray, y_pred: np.ndarray, p_cat: np.ndarray) -> None:
+def _save_test_error_examples(y_true: np.ndarray, y_pred: np.ndarray, p_cat: np.ndarray, threshold: float = 0.5) -> None:
     """Create examples only after final scoring; these are not fed back into selection."""
     out_dir = OUTPUTS / "error_analysis" / "final_test"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -91,7 +88,7 @@ def _save_test_error_examples(y_true: np.ndarray, y_pred: np.ndarray, p_cat: np.
         "correct_cats": np.where((y_true == 1) & (y_pred == 1))[0],
     }
     for name, indices in groups.items():
-        indices = sorted(indices, key=lambda i: abs(float(p_cat[i]) - 0.5), reverse=True)[:12]
+        indices = sorted(indices, key=lambda i: abs(float(p_cat[i]) - threshold), reverse=True)[:12]
         columns, rows = 4, max(1, (len(indices) + 3) // 4)
         fig, axes = plt.subplots(rows, columns, figsize=(12, rows * 3))
         axes = np.asarray(axes).reshape(-1)
@@ -107,8 +104,8 @@ def _save_test_error_examples(y_true: np.ndarray, y_pred: np.ndarray, p_cat: np.
 
 
 BASELINES = (
-    ("Original baseline", ROOT / "backups" / "baseline_20261117" / "outputs"),
-    ("Scratch CNN", ROOT / "backups" / "scratch_cnn_20261119" / "outputs"),
+    ("Original baseline", BASELINE_BACKUP / "outputs"),
+    ("Scratch CNN", SCRATCH_BACKUP / "outputs"),
 )
 
 
@@ -165,9 +162,9 @@ def _comparison_report(metrics: dict[str, Any], threshold: float, experiment: st
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", type=Path, default=MODELS / "candidate_dogs_cats_model.keras", help="Validation-selected candidate model")
-    parser.add_argument("--metadata", type=Path, default=MODELS / "candidate_metadata.json")
-    parser.add_argument("--dataset", type=Path, default=None, help="Dataset root with a test/ split (defaults to the metadata's dataset, else dataset/)")
+    parser.add_argument("--model", type=Path, default=CANDIDATE_MODEL, help="Validation-selected candidate model")
+    parser.add_argument("--metadata", type=Path, default=CANDIDATE_METADATA)
+    parser.add_argument("--dataset", type=Path, default=None, help="Dataset root with a test/ split (defaults to the metadata's dataset, else data/processed_128)")
     parser.add_argument("--promote", action="store_true", help="Promote the already validation-selected candidate after its one final test evaluation")
     parser.add_argument("--allow-repeat-test", action="store_true", help="Explicitly allow re-scoring the final test split; avoid for the primary result")
     args = parser.parse_args()
@@ -177,7 +174,7 @@ def main() -> None:
     if result_guard.exists() and not args.allow_repeat_test:
         raise SystemExit(f"Final test evaluation already exists at {result_guard}. Refusing to reuse the holdout; pass --allow-repeat-test only for an explicit repeat.")
     if not model_path.is_file():
-        raise SystemExit(f"Selected model not found: {model_path}. Run src/train.py first.")
+        raise SystemExit(f"Candidate model not found: {model_path}. Run src/train_transfer.py (or src/train_scratch.py) first.")
     metadata = json.loads(metadata_path.read_text(encoding="utf-8")) if metadata_path.is_file() else {}
     global DATASET
     if args.dataset is not None:
@@ -234,15 +231,15 @@ def main() -> None:
     (OUTPUTS / "classification_report.txt").write_text(report, encoding="utf-8")
     (OUTPUTS / "final_metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     (OUTPUTS / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
-    _save_test_error_examples(y_true, y_pred, p_cat)
+    _save_test_error_examples(y_true, y_pred, p_cat, threshold)
 
     experiment = str(metadata.get("selected_experiment", model_path.stem))
     _comparison_report(metrics, threshold, experiment)
 
     if args.promote:
         # Selection is already fixed from validation. Promotion does not depend on test metrics.
-        production = MODELS / "dogs_cats_model.keras"
-        temporary = MODELS / ".dogs_cats_model.promoting.keras"
+        production = PRODUCTION_MODEL
+        temporary = PRODUCTION_MODEL.with_name(".dogs_cats_model.promoting.keras")
         shutil.copy2(model_path, temporary)
         os.replace(temporary, production)
         promoted_metadata = {
@@ -252,7 +249,7 @@ def main() -> None:
             "final_test_evaluated_once": True,
             "final_test_metrics": {key: metrics[key] for key in ("test_accuracy", "test_loss", "precision_macro", "recall_macro", "f1_macro", "f1_weighted", "roc_auc", "average_precision")},
         }
-        (MODELS / "model_metadata.json").write_text(json.dumps(promoted_metadata, indent=2), encoding="utf-8")
+        PRODUCTION_METADATA.write_text(json.dumps(promoted_metadata, indent=2), encoding="utf-8")
         history = OUTPUTS / "experiments" / experiment / "history.json"
         if history.is_file():
             shutil.copy2(history, OUTPUTS / "training_history.json")

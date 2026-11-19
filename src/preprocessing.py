@@ -12,9 +12,10 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-ROOT = Path(__file__).resolve().parents[1]
-DESTINATION = ROOT / "dataset"
-SUMMARY_DIR = ROOT / "outputs"
+from paths import DATASET_128, OUTPUTS
+
+DESTINATION = DATASET_128
+SUMMARY_DIR = OUTPUTS
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 LABELS = {"cats": "Cat", "dogs": "Dog"}
 SPLIT_RATIOS = {"train": 0.70, "validation": 0.15, "test": 0.15}
@@ -245,7 +246,7 @@ def prepare_dataset(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, help="Hugging Face dataset root containing train/cats and train/dogs (auto-detected from local cache by default)")
-    parser.add_argument("--destination", type=Path, default=DESTINATION)
+    parser.add_argument("--destination", type=Path, default=DESTINATION, help="Output folder (default: data/processed_128; use data/processed_224 with --image-size 224)")
     parser.add_argument("--per-class", type=int, default=2500)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--image-size", type=int, default=IMAGE_SIZE[0], help="Square output size in pixels (128 for the scratch CNN, 224 for the pretrained model)")
