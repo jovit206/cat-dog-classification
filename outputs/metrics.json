@@ -1,0 +1,31 @@
+{
+  "test_loss": 0.018425649031996727,
+  "test_accuracy": 0.996,
+  "precision_macro": 0.996031746031746,
+  "recall_macro": 0.996,
+  "f1_macro": 0.995999935998976,
+  "f1_weighted": 0.9959999359989761,
+  "roc_auc": 0.9997937777777778,
+  "average_precision": 0.9997920036952392,
+  "test_images": 750,
+  "decision_threshold": 0.5,
+  "positive_class": "Cat",
+  "image_size": [
+    224,
+    224
+  ],
+  "dog_precision": 1.0,
+  "dog_recall": 0.992,
+  "cat_precision": 0.9920634920634921,
+  "cat_recall": 1.0,
+  "confusion_matrix": [
+    [
+      372,
+      3
+    ],
+    [
+      0,
+      375
+    ]
+  ]
+}

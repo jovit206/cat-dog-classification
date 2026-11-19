@@ -1,0 +1,5 @@
+split,Dog,Cat,total
+train,1750,1750,3500
+validation,375,375,750
+test,375,375,750
+total,2500,2500,5000

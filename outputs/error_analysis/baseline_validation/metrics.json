@@ -1,0 +1,19 @@
+{
+  "split": "validation",
+  "threshold": 0.5,
+  "accuracy": 0.712,
+  "precision_macro": 0.7296643530109623,
+  "recall_macro": 0.712,
+  "f1_macro": 0.7063536372271083,
+  "confusion_matrix_dog_cat": [
+    [
+      319,
+      56
+    ],
+    [
+      160,
+      215
+    ]
+  ],
+  "classification_report": "              precision    recall  f1-score   support\n\n         Dog     0.6660    0.8507    0.7471       375\n         Cat     0.7934    0.5733    0.6656       375\n\n    accuracy                         0.7120       750\n   macro avg     0.7297    0.7120    0.7064       750\nweighted avg     0.7297    0.7120    0.7064       750\n"
+}

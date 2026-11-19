@@ -1,0 +1,198 @@
+{
+  "winner": {
+    "selected_experiment": "cnn128_adamw_mild_aug",
+    "candidate_model": "models/candidate_dogs_cats_model.keras",
+    "production_model": "models/dogs_cats_model.keras",
+    "class_mapping": {
+      "Dog": 0,
+      "Cat": 1
+    },
+    "output": "P(Cat)",
+    "image_size": [
+      128,
+      128
+    ],
+    "filters": [
+      32,
+      64,
+      128,
+      192
+    ],
+    "batch_size": 32,
+    "optimizer": "adamw",
+    "learning_rate": 0.0003,
+    "dropout": 0.25,
+    "augmentation": {
+      "rotation": 0.04,
+      "zoom": 0.07,
+      "translation": 0.04,
+      "brightness": 0.08,
+      "contrast": 0.1
+    },
+    "validation_threshold": 0.53,
+    "selection_metric": "validation macro F1, then validation accuracy, then validation loss",
+    "validation_metrics": {
+      "val_accuracy": 0.7413333333333333,
+      "val_precision_macro": 0.7424990532265325,
+      "val_recall_macro": 0.7413333333333334,
+      "val_f1_macro": 0.7410220994475138,
+      "val_f1_weighted": 0.7410220994475137,
+      "val_dog_recall": 0.7066666666666667,
+      "val_cat_recall": 0.776
+    },
+    "test_split_used_for_selection": false,
+    "seed": 42
+  },
+  "experiments": [
+    {
+      "experiment": "baseline_original",
+      "model_path": "models/dogs_cats_model.keras",
+      "image_size": [
+        128,
+        128
+      ],
+      "optimizer": "Adam",
+      "learning_rate": 0.001,
+      "weight_decay": 0.0,
+      "batch_size": 32,
+      "dropout": [
+        0.2,
+        0.2,
+        0.3,
+        0.4
+      ],
+      "epochs_run": 15,
+      "best_epoch": 15,
+      "best_val_accuracy": 0.7120000123977661,
+      "best_val_loss": 0.5530686974525452,
+      "validation_threshold": 0.34,
+      "val_accuracy": 0.728,
+      "val_accuracy_at_0_5": 0.712,
+      "val_precision_macro": 0.731483152719318,
+      "val_recall_macro": 0.728,
+      "val_f1_macro": 0.7269729328460484,
+      "val_f1_weighted": 0.7269729328460484,
+      "val_dog_recall": 0.6666666666666666,
+      "val_cat_recall": 0.7893333333333333,
+      "training_seconds": 0,
+      "parameters": 304993,
+      "notes": "Existing baseline; threshold chosen using validation split only."
+    },
+    {
+      "experiment": "cnn128_adam_mild_aug",
+      "model_path": "models/experiment_candidates/cnn128_adam_mild_aug.keras",
+      "image_size": [
+        128,
+        128
+      ],
+      "optimizer": "adam",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0,
+      "batch_size": 32,
+      "dropout": 0.25,
+      "epochs_run": 12,
+      "best_epoch": 8,
+      "best_val_accuracy": 0.7333333492279053,
+      "best_val_loss": 0.5454692244529724,
+      "validation_threshold": 0.52,
+      "val_accuracy": 0.74,
+      "val_accuracy_at_0_5": 0.7293333333333333,
+      "val_precision_macro": 0.7494530510879849,
+      "val_recall_macro": 0.74,
+      "val_f1_macro": 0.7375132589456379,
+      "val_f1_weighted": 0.7375132589456378,
+      "val_dog_recall": 0.6426666666666667,
+      "val_cat_recall": 0.8373333333333334,
+      "training_seconds": 299.31,
+      "parameters": 356737,
+      "notes": "Selected using validation macro F1; test split not accessed."
+    },
+    {
+      "experiment": "cnn128_adamw_mild_aug",
+      "model_path": "models/experiment_candidates/cnn128_adamw_mild_aug.keras",
+      "image_size": [
+        128,
+        128
+      ],
+      "optimizer": "adamw",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "batch_size": 32,
+      "dropout": 0.25,
+      "epochs_run": 15,
+      "best_epoch": 11,
+      "best_val_accuracy": 0.7440000176429749,
+      "best_val_loss": 0.5367403030395508,
+      "validation_threshold": 0.53,
+      "val_accuracy": 0.7413333333333333,
+      "val_accuracy_at_0_5": 0.732,
+      "val_precision_macro": 0.7424990532265325,
+      "val_recall_macro": 0.7413333333333334,
+      "val_f1_macro": 0.7410220994475138,
+      "val_f1_weighted": 0.7410220994475137,
+      "val_dog_recall": 0.7066666666666667,
+      "val_cat_recall": 0.776,
+      "training_seconds": 416.32,
+      "parameters": 356737,
+      "notes": "Selected using validation macro F1; test split not accessed."
+    },
+    {
+      "experiment": "cnn160_adamw_mild_aug",
+      "model_path": "models/experiment_candidates/cnn160_adamw_mild_aug.keras",
+      "image_size": [
+        160,
+        160
+      ],
+      "optimizer": "adamw",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "batch_size": 32,
+      "dropout": 0.25,
+      "epochs_run": 9,
+      "best_epoch": 5,
+      "best_val_accuracy": 0.6320000290870667,
+      "best_val_loss": 0.668120265007019,
+      "validation_threshold": 0.72,
+      "val_accuracy": 0.7066666666666667,
+      "val_accuracy_at_0_5": 0.608,
+      "val_precision_macro": 0.7101090940638081,
+      "val_recall_macro": 0.7066666666666668,
+      "val_f1_macro": 0.7054602317760212,
+      "val_f1_weighted": 0.7054602317760212,
+      "val_dog_recall": 0.6426666666666667,
+      "val_cat_recall": 0.7706666666666667,
+      "training_seconds": 355.35,
+      "parameters": 356737,
+      "notes": "Selected using validation macro F1; test split not accessed."
+    },
+    {
+      "experiment": "cnn128_adamw_wider_dropout",
+      "model_path": "models/experiment_candidates/cnn128_adamw_wider_dropout.keras",
+      "image_size": [
+        128,
+        128
+      ],
+      "optimizer": "adamw",
+      "learning_rate": 0.0005,
+      "weight_decay": 0.0001,
+      "batch_size": 24,
+      "dropout": 0.3,
+      "epochs_run": 9,
+      "best_epoch": 5,
+      "best_val_accuracy": 0.7106666564941406,
+      "best_val_loss": 0.5591855645179749,
+      "validation_threshold": 0.53,
+      "val_accuracy": 0.7186666666666667,
+      "val_accuracy_at_0_5": 0.7106666666666667,
+      "val_precision_macro": 0.7231235850699483,
+      "val_recall_macro": 0.7186666666666667,
+      "val_f1_macro": 0.7172546994680993,
+      "val_f1_weighted": 0.7172546994680994,
+      "val_dog_recall": 0.648,
+      "val_cat_recall": 0.7893333333333333,
+      "training_seconds": 223.12,
+      "parameters": 440961,
+      "notes": "Selected using validation macro F1; test split not accessed."
+    }
+  ]
+}

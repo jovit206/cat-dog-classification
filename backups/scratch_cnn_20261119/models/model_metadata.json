@@ -1,0 +1,56 @@
+{
+  "selected_experiment": "cnn128_adamw_mild_aug",
+  "candidate_model": "models/candidate_dogs_cats_model.keras",
+  "production_model": "models/dogs_cats_model.keras",
+  "class_mapping": {
+    "Dog": 0,
+    "Cat": 1
+  },
+  "output": "P(Cat)",
+  "image_size": [
+    128,
+    128
+  ],
+  "filters": [
+    32,
+    64,
+    128,
+    192
+  ],
+  "batch_size": 32,
+  "optimizer": "adamw",
+  "learning_rate": 0.0003,
+  "dropout": 0.25,
+  "augmentation": {
+    "rotation": 0.04,
+    "zoom": 0.07,
+    "translation": 0.04,
+    "brightness": 0.08,
+    "contrast": 0.1
+  },
+  "validation_threshold": 0.53,
+  "selection_metric": "validation macro F1, then validation accuracy, then validation loss",
+  "validation_metrics": {
+    "val_accuracy": 0.7413333333333333,
+    "val_precision_macro": 0.7424990532265325,
+    "val_recall_macro": 0.7413333333333334,
+    "val_f1_macro": 0.7410220994475138,
+    "val_f1_weighted": 0.7410220994475137,
+    "val_dog_recall": 0.7066666666666667,
+    "val_cat_recall": 0.776
+  },
+  "test_split_used_for_selection": false,
+  "seed": 42,
+  "promoted_from": "models/candidate_dogs_cats_model.keras",
+  "final_test_evaluated_once": true,
+  "final_test_metrics": {
+    "test_accuracy": 0.748,
+    "test_loss": 0.5261302590370178,
+    "precision_macro": 0.7487801746276322,
+    "recall_macro": 0.748,
+    "f1_macro": 0.7478022769851563,
+    "f1_weighted": 0.7478022769851563,
+    "roc_auc": 0.8233813333333333,
+    "average_precision": 0.8044483902302841
+  }
+}

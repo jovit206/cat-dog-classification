@@ -1,0 +1,9 @@
+﻿.venv/
+__pycache__/
+*.h5
+*.keras
+*.pth
+*.zip
+train/
+test/
+test1/
